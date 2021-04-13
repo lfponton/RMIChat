@@ -13,7 +13,6 @@ public class MessageSenderManager implements MessageSender
 
   public MessageSenderManager(Client client) {
     this.client = client;
-    client.startClient();
     client.addPropertyChangeListener("NewMessage", this::onNewMessage);
   }
 
@@ -22,9 +21,9 @@ public class MessageSenderManager implements MessageSender
     support.firePropertyChange(evt);
   }
 
-  @Override public String sendMessage(String message)
+  @Override public void sendMessage(String message)
   {
-    return client.sendMessage(message);
+    client.sendMessage(message);
   }
 
   @Override public void createUser(String username)
@@ -37,6 +36,7 @@ public class MessageSenderManager implements MessageSender
     return client.getNumberOfConnections();
   }
 
+
   @Override public void addPropertyChangeListener(String name,
       PropertyChangeListener listener)
   {
@@ -48,5 +48,6 @@ public class MessageSenderManager implements MessageSender
   {
     support.addPropertyChangeListener(listener);
   }
+
 
 }

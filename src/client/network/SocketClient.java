@@ -14,10 +14,25 @@ public class SocketClient implements Client
 {
   private PropertyChangeSupport support;
   private String username;
+  private ObjectOutputStream outToServer;
+  private ObjectInputStream inFromServer;
+  private Socket socket;
 
   public SocketClient() {
     support = new PropertyChangeSupport(this);
     username = "";
+    try
+    {
+      socket = new Socket("localhost", 1234);
+      outToServer = new ObjectOutputStream(socket.getOutputStream());
+      inFromServer = new ObjectInputStream(socket.getInputStream());
+
+      new Thread(this::listenToServer).start();
+    }
+    catch (IOException e)
+    {
+      e.printStackTrace();
+    }
   }
 
   @Override public void startClient()
@@ -25,10 +40,11 @@ public class SocketClient implements Client
     try
     {
       Socket socket = new Socket("localhost", 1234);
-      ObjectOutputStream outToServer = new ObjectOutputStream(socket.getOutputStream());
-      ObjectInputStream inFromServer = new ObjectInputStream(socket.getInputStream());
+      this.outToServer = new ObjectOutputStream(socket.getOutputStream());
+      this.inFromServer = new ObjectInputStream(socket.getInputStream());
 
-      new Thread(() -> listenToServer(outToServer, inFromServer)).start();
+      Thread t = new Thread(this::listenToServer);
+      t.start();
     }
     catch (IOException e)
     {
@@ -41,8 +57,7 @@ public class SocketClient implements Client
     this.username = username;
   }
 
-
-  private void listenToServer(ObjectOutputStream outToServer, ObjectInputStream inFromServer)
+  private void listenToServer()
   {
     try
     {
@@ -58,30 +73,25 @@ public class SocketClient implements Client
     }
   }
 
-  private Request requestMessage(String arg, String type)
+  public void requestMessage(String arg, String type)
       throws IOException, ClassNotFoundException
   {
     Socket socket = new Socket("localhost", 1234);
     ObjectOutputStream outToServer = new ObjectOutputStream(socket.getOutputStream());
-    ObjectInputStream inFromServer = new ObjectInputStream(socket.getInputStream());
     outToServer.writeObject(new Request(type, new Message(username, arg)));
-    return (Request) inFromServer.readObject();
   }
 
 
-  @Override public String sendMessage(String str)
+  @Override public void sendMessage(String str)
   {
-    Message message = new Message(username, str);
     try
     {
-      Request response = requestMessage(str, "SendMessage");
-      return (String) response.getArgument();
+      requestMessage(str, "SendMessage");
     }
     catch (IOException | ClassNotFoundException e)
     {
       e.printStackTrace();
     }
-    return message.toString();
   }
 
   private Request requestConnections(String arg, String type)

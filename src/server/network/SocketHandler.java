@@ -45,14 +45,12 @@ public class SocketHandler implements Runnable
       Request request = (Request) inFromClient.readObject();
       if ("Listener".equals(request.getType())) {
         messageSender.addPropertyChangeListener("NewMessage", this::onNewMessage);
-
       }
       else if ("SendMessage".equals(request.getType())) {
         Message message = (Message) request.getArgument();
         this.username = message.getUsername();
         pool.addConnection(this, message);
-        String result = messageSender.sendMessage(message.toString());
-        outToClient.writeObject(new Request(("NewMessage"), result));
+        messageSender.sendMessage(message.toString());
       }
       else if ("NumberOfConnections".equals(request.getType())) {
         String numberOfConnections = String.valueOf(pool.size());

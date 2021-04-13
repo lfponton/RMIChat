@@ -16,7 +16,7 @@ public class MessageSenderManager implements MessageSender
     messages = new ArrayList<>();
   }
 
-  @Override public String sendMessage(String message)
+  @Override public void sendMessage(String message)
   {
     messages.add(message);
     String result = "";
@@ -25,7 +25,6 @@ public class MessageSenderManager implements MessageSender
       result += m + "\n";
     }
     support.firePropertyChange("NewMessage", null, result);
-    return result;
   }
 
   @Override public void addPropertyChangeListener(String name,
